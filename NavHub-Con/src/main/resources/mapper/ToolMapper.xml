@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.navhub.mapper.ToolMapper">
+    
+    <resultMap id="ToolResultMap" type="com.navhub.entity.Tool">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="description" column="description"/>
+        <result property="url" column="url"/>
+        <result property="icon" column="icon"/>
+        <result property="categoryId" column="category_id"/>
+        <result property="tagsJson" column="tags"/>
+        <result property="isPublished" column="is_published"/>
+        <result property="isOnline" column="is_online"/>
+        <result property="sort" column="sort"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+    
+    <select id="findAll" resultMap="ToolResultMap">
+        SELECT * FROM tool
+        <where>
+            <if test="onlyPublished != null and onlyPublished == true">
+                AND is_published = 1
+            </if>
+            <if test="categoryId != null and categoryId != '' and categoryId != 'all'">
+                AND category_id = #{categoryId}
+            </if>
+            <if test="search != null and search != ''">
+                AND (name LIKE CONCAT('%', #{search}, '%') 
+                     OR description LIKE CONCAT('%', #{search}, '%')
+                     OR tags LIKE CONCAT('%', #{search}, '%'))
+            </if>
+        </where>
+        ORDER BY sort ASC, created_at DESC
+    </select>
+    
+    <select id="findById" resultMap="ToolResultMap">
+        SELECT * FROM tool WHERE id = #{id}
+    </select>
+    
+    <insert id="insert">
+        INSERT INTO tool (id, name, description, url, icon, category_id, tags,
+                         is_published, is_online, sort, created_at, updated_at)
+        VALUES (#{id}, #{name}, #{description}, #{url}, #{icon}, #{categoryId}, #{tagsJson},
+                #{isPublished}, #{isOnline}, #{sort}, #{createdAt}, #{updatedAt})
+    </insert>
+    
+    <update id="update">
+        UPDATE tool
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="url != null">url = #{url},</if>
+            <!-- icon 字段：允许空字符串，但不允许 null -->
+            <if test="icon != null">icon = #{icon},</if>
+            <if test="categoryId != null">category_id = #{categoryId},</if>
+            <if test="tagsJson != null">tags = #{tagsJson},</if>
+            <if test="isPublished != null">is_published = #{isPublished},</if>
+            <if test="isOnline != null">is_online = #{isOnline},</if>
+            <if test="sort != null">sort = #{sort},</if>
+            updated_at = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+    
+    <update id="togglePublish">
+        UPDATE tool SET is_published = #{isPublished}, updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+    
+    <delete id="deleteById">
+        DELETE FROM tool WHERE id = #{id}
+    </delete>
+    
+    <!-- 批量更新工具排序 -->
+    <update id="batchUpdateSort">
+        UPDATE tool
+        SET sort = CASE id
+        <foreach collection="tools" item="tool">
+            WHEN #{tool.id} THEN #{tool.sort}
+        </foreach>
+        END,
+        updated_at = NOW()
+        WHERE id IN
+        <foreach collection="tools" item="tool" open="(" separator="," close=")">
+            #{tool.id}
+        </foreach>
+    </update>
+</mapper>

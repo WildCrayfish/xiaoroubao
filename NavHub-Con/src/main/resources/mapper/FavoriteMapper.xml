@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.navhub.mapper.FavoriteMapper">
+    
+    <resultMap id="FavoriteResultMap" type="com.navhub.entity.Favorite">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="toolId" column="tool_id"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+    
+    <select id="findByUserId" resultMap="FavoriteResultMap">
+        SELECT * FROM favorite WHERE user_id = #{userId}
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="findToolIdsByUserId" resultType="java.lang.String">
+        SELECT tool_id FROM favorite WHERE user_id = #{userId}
+    </select>
+    
+    <select id="findByUserIdAndToolId" resultMap="FavoriteResultMap">
+        SELECT * FROM favorite 
+        WHERE user_id = #{userId} AND tool_id = #{toolId}
+        LIMIT 1
+    </select>
+    
+    <insert id="insert">
+        INSERT INTO favorite (id, user_id, tool_id, created_at)
+        VALUES (#{id}, #{userId}, #{toolId}, #{createdAt})
+    </insert>
+    
+    <delete id="delete">
+        DELETE FROM favorite 
+        WHERE user_id = #{userId} AND tool_id = #{toolId}
+    </delete>
+</mapper>

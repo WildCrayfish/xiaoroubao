@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.navhub.mapper.CategoryMapper">
+    
+    <resultMap id="CategoryResultMap" type="com.navhub.entity.Category">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="icon" column="icon"/>
+        <result property="sort" column="sort"/>
+        <result property="isVisible" column="is_visible"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+    
+    <select id="findAll" resultMap="CategoryResultMap">
+        SELECT * FROM category 
+        WHERE is_visible = 1
+        ORDER BY sort ASC, created_at ASC
+    </select>
+    
+    <select id="findById" resultMap="CategoryResultMap">
+        SELECT * FROM category WHERE id = #{id}
+    </select>
+    
+    <insert id="insert">
+        INSERT INTO category (id, name, icon, sort, is_visible, created_at, updated_at)
+        VALUES (#{id}, #{name}, #{icon}, #{sort}, #{isVisible}, #{createdAt}, #{updatedAt})
+    </insert>
+    
+    <update id="update">
+        UPDATE category
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="icon != null">icon = #{icon},</if>
+            <if test="sort != null">sort = #{sort},</if>
+            <if test="isVisible != null">is_visible = #{isVisible},</if>
+            updated_at = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+    
+    <delete id="deleteById">
+        DELETE FROM category WHERE id = #{id}
+    </delete>
+</mapper>

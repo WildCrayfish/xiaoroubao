@@ -1,0 +1,202 @@
+@custom-variant dark (&:is(.dark *));
+
+/* 白天模式（默认） */
+:root {
+  --font-size: 16px;
+  --background: #ffffff;
+  --foreground: oklch(0.145 0 0);
+  --card: #ffffff;
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: #030213;
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.95 0.0058 264.53);
+  --secondary-foreground: #030213;
+  --muted: #ececf0;
+  --muted-foreground: #717182;
+  --accent: #e9ebef;
+  --accent-foreground: #030213;
+  --destructive: #d4183d;
+  --destructive-foreground: #ffffff;
+  --border: rgba(0, 0, 0, 0.1);
+  --input: transparent;
+  --input-background: #f3f3f5;
+  --switch-background: #cbced4;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --ring: oklch(0.708 0 0);
+  --radius: 0.625rem;
+}
+
+/* 夜间模式 */
+.dark {
+  --background: #0f0f1a;
+  --foreground: #f0f0f3;
+  --card: #1a1a2e;
+  --card-foreground: #f0f0f3;
+  --popover: #1a1a2e;
+  --popover-foreground: #f0f0f3;
+  --primary: #ffffff;
+  --primary-foreground: #1a1a2e;
+  --secondary: #2d2d44;
+  --secondary-foreground: #f0f0f3;
+  --muted: #2d2d44;
+  --muted-foreground: #c0c0d0;
+  --accent: #2d2d44;
+  --accent-foreground: #f0f0f3;
+  --destructive: #ff5555;
+  --destructive-foreground: #ffffff;
+  --border: rgba(255, 255, 255, 0.15);
+  --input: transparent;
+  --input-background: #2d2d44;
+  --switch-background: #4a4a66;
+  --ring: #e0e0e8;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  html {
+    font-size: var(--font-size);
+  }
+}
+
+/* 动态渐变背景动画 */
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes gradient-shift-reverse {
+  0%, 100% {
+    background-position: 100% 50%;
+  }
+  50% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes gradient-shift-slow {
+  0%, 100% {
+    background-position: 0% 0%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+}
+
+/* 无缝彩虹流动动画 */
+@keyframes rainbow-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient-shift {
+  background-size: 200% 200%;
+  animation: gradient-shift 8s ease infinite;
+}
+
+.animate-gradient-shift-reverse {
+  background-size: 200% 200%;
+  animation: gradient-shift-reverse 10s ease infinite;
+}
+
+.animate-gradient-shift-slow {
+  background-size: 200% 200%;
+  animation: gradient-shift-slow 12s ease infinite;
+}
+
+.animate-rainbow-flow {
+  background: linear-gradient(
+    135deg,
+    #ff6b6b 0%,
+    #feca57 10%,
+    #48dbfb 20%,
+    #1dd1a1 30%,
+    #5f27cd 40%,
+    #00d2d3 50%,
+    #ff9ff3 60%,
+    #54a0ff 70%,
+    #feca57 80%,
+    #ff6b6b 90%,
+    #ff6b6b 100%
+  );
+  background-size: 400% 400%;
+  animation: rainbow-flow 15s ease infinite;
+}
+
+/* 暗色模式的彩虹渐变（更深的色调） */
+.dark .animate-rainbow-flow {
+  background: linear-gradient(
+    135deg,
+    #1a1a2e 0%,
+    #16213e 10%,
+    #0f3460 20%,
+    #1a4d2e 30%,
+    #2d1b69 40%,
+    #134e4a 50%,
+    #4a1942 60%,
+    #1e3a8a 70%,
+    #16213e 80%,
+    #1a1a2e 90%,
+    #1a1a2e 100%
+  );
+  background-size: 400% 400%;
+  animation: rainbow-flow 15s ease infinite;
+}
+
+/* 隐藏滚动条 */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}

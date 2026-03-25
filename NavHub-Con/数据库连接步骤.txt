@@ -1,0 +1,65 @@
+========================================
+NavHub 数据库连接步骤（快速指南）
+========================================
+
+【第一步】安装并启动 MySQL 8
+----------------------------------------
+1. 确保 MySQL 8 已安装并启动
+2. 验证 MySQL 服务：
+   Windows: net start MySQL80
+   或通过服务管理器查看 MySQL80 服务状态
+
+【第二步】创建数据库和表
+----------------------------------------
+方式一：使用命令行（推荐）
+  1. 打开命令行（CMD 或 PowerShell）
+  2. 进入项目目录：
+     cd C:\Users\xiaoroubao\Desktop\NavHub-Con
+  3. 执行初始化脚本：
+     mysql -u root -p < src\main\resources\db\init.sql
+  4. 输入 MySQL root 密码
+
+方式二：使用 MySQL 客户端
+  1. 打开 MySQL Workbench 或 Navicat
+  2. 连接到本地 MySQL
+  3. 打开文件：src\main\resources\db\init.sql
+  4. 执行整个脚本
+
+【第三步】修改数据库连接配置
+----------------------------------------
+编辑文件：src\main\resources\application.yml
+
+修改以下配置：
+  spring:
+    datasource:
+      username: root          # 你的 MySQL 用户名
+      password: your_password # 你的 MySQL 密码
+
+【第四步】测试连接
+----------------------------------------
+1. 启动项目：
+   mvn spring-boot:run
+
+2. 查看启动日志，应该看到：
+   HikariPool-1 - Start completed.
+
+3. 测试 API：
+   浏览器访问：http://localhost:8080/api/categories
+   应该返回分类数据
+
+【默认账号】
+----------------------------------------
+管理员账号：
+  用户名：admin
+  密码：admin123
+
+【常见问题】
+----------------------------------------
+1. 连接失败：检查 MySQL 服务是否启动
+2. 密码错误：确认 application.yml 中的密码正确
+3. 数据库不存在：执行 init.sql 创建数据库
+4. 表不存在：执行 init.sql 创建表结构
+
+【详细说明】
+----------------------------------------
+查看文件：数据库初始化指南.md

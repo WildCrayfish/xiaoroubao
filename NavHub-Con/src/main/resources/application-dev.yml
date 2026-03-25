@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/navhub?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:root}
+
+logging:
+  level:
+    com.navhub: debug
