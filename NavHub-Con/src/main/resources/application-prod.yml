@@ -11,6 +11,3 @@ logging:
 app:
   cors:
     allowed-origins: https://your-frontend-domain.com
-app:
-  cors:
-    allowed-origins: https://your-frontend-domain.com

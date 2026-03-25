@@ -12,8 +12,8 @@ services:
     pull_policy: always
     container_name: navhub-nginx
     ports:
-      # 对外只暴露 nginx
-      - "80:80"
+      # 对外只暴露 nginx（NAS 80 端口被系统占用时可改宿主机端口）
+      - "9090:80"
       # 如后续启用 HTTPS，可增加：
       # - "443:443"
     depends_on:
