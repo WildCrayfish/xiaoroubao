@@ -45,18 +45,14 @@ services:
       # 可选 JVM 参数（按 NAS 内存调整）
       # JAVA_OPTS: -Xms256m -Xmx512m
 
-    # 如未来改回“外置后端配置文件”模式，可启用下面两行：
-    # volumes:
-    #   - /nas/app/config:/app/config:ro
-    # 并加：SPRING_CONFIG_ADDITIONAL_LOCATION: /app/config/
-
     depends_on:
       mysql:
         condition: service_healthy
     restart: unless-stopped
 
   mysql:
-    image: mysql:8.0.36
+    # MySQL 镜像改为可直拉的镜像站地址
+    image: docker.m.daocloud.io/library/mysql:8.0.36
     container_name: navhub-mysql
 
     command:
@@ -75,7 +71,7 @@ services:
 
     volumes:
       # 数据持久化：NAS 路径 -> 容器路径
-      - /nas/mysql/data:/var/lib/mysql
+      - /vol2/1000/biaoqian/mysql/data:/var/lib/mysql
 
       # 如后续需要 MySQL 自定义参数，可启用：
       # - /nas/mysql/conf:/etc/mysql/conf.d:ro
