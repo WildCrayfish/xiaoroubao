@@ -1,0 +1,53 @@
+name: Build and Push Images to GHCR
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push nginx image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./deploy/nginx/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/wildcrayfish/navhub-nginx:v1
+            ghcr.io/wildcrayfish/navhub-nginx:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./NavHub-Con
+          file: ./deploy/backend/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/wildcrayfish/navhub-backend:v1
+            ghcr.io/wildcrayfish/navhub-backend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+

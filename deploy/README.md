@@ -1,45 +1,62 @@
-# Deploy 使用说明（单仓库：GitHub 拉代码后在 NAS 本地构建）
+# Deploy 使用说明（单文件 + GitHub Actions 自动推镜像）
 
-## 目录要求
-请保持仓库结构：
-- `NavHub/`（前端）
-- `NavHub-Con/`（后端）
-- `deploy/`（部署文件）
+本项目当前使用：
+- **单文件 compose 部署**（NAS 只导入 `docker-compose.yml`）
+- **GitHub Actions 自动构建并推送 GHCR 镜像**
 
-## 1) 准备配置与目录
-1. 复制环境变量文件：
-```bash
-cp env.example .env
-```
-2. 复制后端配置模板并放到 NAS：
-```bash
-cp application-prod.yml.example /nas/app/config/application-prod.yml
-```
-3. 确保 NAS 目录存在：
-```bash
-mkdir -p /nas/mysql/data /nas/app/config
-```
+## 一、已启用的自动化
+仓库包含工作流：`.github/workflows/build-and-push-images.yml`
 
-## 2) 首次部署（在 deploy 目录）
-```bash
-docker compose --env-file .env up -d --build
-```
+触发条件：
+- push 到 `main`
+- 手动触发（workflow_dispatch）
 
-## 3) 日常更新（GitHub 拉取后重建）
+自动推送镜像：
+- `ghcr.io/wildcrayfish/navhub-nginx:v1`
+- `ghcr.io/wildcrayfish/navhub-backend:v1`
+
+## 二、上线前必做
+1. 在 `docker-compose.yml` 里替换真实密码：
+   - `MYSQL_ROOT_PASSWORD`
+   - `MYSQL_PASSWORD`
+   - `SPRING_DATASOURCE_PASSWORD`
+2. NAS 创建数据目录：
 ```bash
-git pull
-docker compose --env-file .env up -d --build nginx backend
+mkdir -p /nas/mysql/data
+```
+3. 若 GHCR 包是私有，先在 NAS 登录：
+```bash
+docker login ghcr.io -u <github-username>
 ```
 
-## 4) 查看状态
+## 三、首次部署
+在 NAS 的 Docker/Compose 导入 `docker-compose.yml` 并启动；或命令行：
+```bash
+docker compose pull
+docker compose up -d
+```
+
+## 四、后续更新
+由于 compose 中 `nginx`/`backend` 配置了 `pull_policy: always`，每次重启会尝试拉取最新同标签镜像。
+
+推荐发布动作：
+1. 本地提交并 push 到 `main`
+2. 等待 GitHub Actions 构建完成
+3. 在 NAS 执行：
+```bash
+docker compose up -d
+```
+
+## 五、验收命令
 ```bash
 docker compose ps
-docker compose logs -f nginx
-docker compose logs -f backend
 docker compose logs -f mysql
+docker compose logs -f backend
+docker compose logs -f nginx
+curl -I http://127.0.0.1
 ```
 
 ## 注意事项
-- 不要执行：`docker compose down -v`
-- 不要对 mysql 配置公网端口映射
-- mysql 数据在 `/nas/mysql/data`，更新容器不会丢失
+- 不要执行：`docker compose down -v`（会删卷数据）
+- mysql 不要暴露公网端口
+- `v1` 为固定标签，如需可回滚发布，建议后续改为版本标签（如 `v1.0.1`）

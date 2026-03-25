@@ -1,55 +1,91 @@
+# ==========================================
+# NavHub 一体化部署文件（单文件模式）
+# 目标：在 NAS 上仅导入这一个 compose 文件即可运行
+# 包含：nginx（前端+反代） / backend（Spring Boot） / mysql
+# ==========================================
+
 services:
   nginx:
-    image: navhub-nginx:${NGINX_TAG:-v1}
-    build:
-      context: ..
-      dockerfile: deploy/nginx/Dockerfile
+    # 前端镜像（需提前推送到镜像仓库）
+    image: ghcr.io/wildcrayfish/navhub-nginx:v1
+    # 每次启动前尝试拉取最新同标签镜像（配合 CI 推送 v1）
+    pull_policy: always
     container_name: navhub-nginx
     ports:
+      # 对外只暴露 nginx
       - "80:80"
+      # 如后续启用 HTTPS，可增加：
       # - "443:443"
     depends_on:
       - backend
     restart: unless-stopped
 
   backend:
-    image: navhub-backend:${BACKEND_TAG:-v1}
-    build:
-      context: ../NavHub-Con
-      dockerfile: ../deploy/backend/Dockerfile
+    # 后端镜像（需提前推送到镜像仓库）
+    image: ghcr.io/wildcrayfish/navhub-backend:v1
+    # 每次启动前尝试拉取最新同标签镜像（配合 CI 推送 v1）
+    pull_policy: always
     container_name: navhub-backend
+
+    # 不向宿主机映射端口，只在容器网络内被 nginx 访问
     expose:
       - "8080"
+
     environment:
+      # 基础运行参数
       TZ: Asia/Shanghai
       SPRING_PROFILES_ACTIVE: prod
-      SPRING_CONFIG_ADDITIONAL_LOCATION: /app/config/
-    volumes:
-      - /nas/app/config:/app/config:ro
+
+      # ===== 数据库连接（已合并进 compose，不依赖外置 application-prod.yml）=====
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/navhub?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=utf8
+      SPRING_DATASOURCE_USERNAME: navhub
+      SPRING_DATASOURCE_PASSWORD: ChangeMe_App_123
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.cj.jdbc.Driver
+
+      # 可选 JVM 参数（按 NAS 内存调整）
+      # JAVA_OPTS: -Xms256m -Xmx512m
+
+    # 如未来改回“外置后端配置文件”模式，可启用下面两行：
+    # volumes:
+    #   - /nas/app/config:/app/config:ro
+    # 并加：SPRING_CONFIG_ADDITIONAL_LOCATION: /app/config/
+
     depends_on:
       mysql:
         condition: service_healthy
     restart: unless-stopped
 
   mysql:
-    image: mysql:${MYSQL_TAG:-8.0.36}
+    image: mysql:8.0.36
     container_name: navhub-mysql
+
     command:
       - --default-authentication-plugin=mysql_native_password
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
+
     environment:
       TZ: Asia/Shanghai
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-navhub}
-      MYSQL_USER: ${MYSQL_USER:-navhub}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+
+      # MySQL 初始化配置（首次启动会创建库和用户）
+      MYSQL_ROOT_PASSWORD: ChangeMe_Root_123
+      MYSQL_DATABASE: navhub
+      MYSQL_USER: navhub
+      MYSQL_PASSWORD: ChangeMe_App_123
+
     volumes:
+      # 数据持久化：NAS 路径 -> 容器路径
       - /nas/mysql/data:/var/lib/mysql
+
+      # 如后续需要 MySQL 自定义参数，可启用：
       # - /nas/mysql/conf:/etc/mysql/conf.d:ro
+
+    # 健康检查：后端会等待 mysql 健康后再启动
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p$$MYSQL_ROOT_PASSWORD --silent"]
       interval: 10s
       timeout: 5s
       retries: 10
+
+    # 不映射宿主机端口，避免数据库暴露公网
     restart: unless-stopped
