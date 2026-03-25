@@ -17,6 +17,7 @@
 # Java / Maven
 **/target/
 **/.mvn/timing.properties
+.m2-ci/
 
 # Logs
 *.log
