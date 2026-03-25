@@ -20,6 +20,16 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Set up JDK 8 for backend package
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '8'
+          cache: maven
+
+      - name: Build backend jar (debuggable)
+        run: mvn -f ./NavHub-Con/pom.xml -B -U -DskipTests clean package -e
+
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
@@ -50,4 +60,3 @@ jobs:
             ghcr.io/wildcrayfish/navhub-backend:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
